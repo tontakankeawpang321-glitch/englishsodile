@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Military Lexicon | พจนานุกรมศัพท์ทหาร</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons (Modern & Clean) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --primary: #10b981; /* Emerald 500 */
+            --primary-dark: #047857; /* Emerald 700 */
+            --bg-base: #0f172a; /* Slate 900 */
+            --surface: #1e293b; /* Slate 800 */
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-base);
+            color: #f8fafc;
+            /* Tactical grid background */
+            background-image: 
+                linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)),
+                url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm20 20h20v20H20V20zM0 20h20v20H0V20z' fill='%231e293b' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E");
+            min-height: 100vh;
+        }
+
+        .font-military {
+            font-family: 'Black Ops One', cursive;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* Card Hover Effects */
+        .vocab-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #334155;
+        }
+        .vocab-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15);
+        }
+
+        /* Category Scrollbar Hiding */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex flex-col items-center p-4 md:p-8">
+
+    <div class="w-full max-w-5xl space-y-8">
+        
+        <!-- Header Section -->
+        <header class="bg-slate-800/80 backdrop-blur-md rounded-[2rem] p-6 md:p-10 shadow-2xl border border-slate-700 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+            <!-- Decorative accent -->
+            <div class="absolute top-0 left-0 w-2 h-full bg-emerald-500"></div>
+
+            <div class="flex items-center gap-6 z-10 text-center md:text-left">
+                <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-emerald-500 shadow-inner border border-slate-700 shrink-0">
+                    <i class="ph-fill ph-crosshair text-4xl animate-pulse" style="animation-duration: 3s;"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-5xl font-military text-white tracking-widest mb-1 drop-shadow-lg">
+                        MILITARY LEXICON
+                    </h1>
+                    <p class="text-emerald-400 font-mono text-sm md:text-base tracking-wider uppercase flex items-center justify-center md:justify-start gap-2">
+                        <i class="ph-bold ph-database"></i> Tactical Vocabulary Database
+                    </p>
+                </div>
+            </div>
+
+            <!-- Total Stats -->
+            <div class="bg-slate-900 px-6 py-4 rounded-2xl border border-slate-700 flex items-center gap-4 z-10 w-full md:w-auto justify-center">
+                <div class="text-slate-400">
+                    <p class="text-[10px] font-mono tracking-widest uppercase mb-1">Total Entries</p>
+                    <p class="text-3xl font-bold text-white leading-none" id="total-count">0</p>
+                </div>
+                <div class="h-10 w-[1px] bg-slate-700 mx-2"></div>
+                <div class="text-slate-400">
+                    <p class="text-[10px] font-mono tracking-widest uppercase mb-1">Status</p>
+                    <p class="text-emerald-500 font-bold font-mono text-sm flex items-center gap-1">
+                        <i class="ph-fill ph-check-circle"></i> ONLINE
+                    </p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search & Filter Controls -->
+        <div class="space-y-4">
+            <!-- Search Bar -->
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="ph-bold ph-magnifying-glass text-slate-400 group-focus-within:text-emerald-500 text-xl transition-colors"></i>
+                </div>
+                <input type="text" id="searchInput" 
+                    class="block w-full pl-12 pr-4 py-4 bg-slate-800/80 border border-slate-700 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-mono text-lg transition-all shadow-lg backdrop-blur-sm" 
+                    placeholder="Search terms... (ENG / TH / IPA)">
+            </div>
+
+            <!-- Categories Filter -->
+            <div class="flex gap-2 overflow-x-auto pb-2 hide-scrollbar" id="category-filters">
+                <button onclick="filterCategory('All')" class="cat-btn active px-5 py-2 rounded-xl text-sm font-bold tracking-wider font-mono whitespace-nowrap bg-emerald-600 text-white shadow-lg border border-emerald-500 transition-all">
+                    ALL
+                </button>
+                <!-- Generated dynamically via JS -->
+            </div>
+        </div>
+
+        <!-- Vocabulary Grid Container -->
+        <div id="vocab-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <!-- Content injected here via JS -->
+        </div>
+
+        <!-- Empty State (Hidden by default) -->
+        <div id="no-results" class="hidden flex-col items-center justify-center py-20 bg-slate-800/50 rounded-[2rem] border border-slate-700 border-dashed">
+            <i class="ph-duotone ph-warning-circle text-6xl text-slate-500 mb-4"></i>
+            <h3 class="text-xl font-bold text-slate-300">No matching records found</h3>
+            <p class="text-slate-500 font-mono text-sm mt-2">Try adjusting your search parameters</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --------------------------------------------------------
+        // DATABASE: The original Military Terminology Data
+        // --------------------------------------------------------
+        const vocabularyData = [
+            { en: "Ambush", ipa: "แอม-บุช", th: "การซุ่มโจมตี", cat: "Tactics" },
+            { en: "Assault Rifle", ipa: "อะ-ซอลท-ไร-เฟิล", th: "ปืนไรเฟิลจู่โจม", cat: "Weapon" },
+            { en: "Artillery", ipa: "อา-ทิล-เลอ-รี", th: "ปืนใหญ่", cat: "Weapon" },
+            { en: "Air Superiority", ipa: "แอร์-ซู-พี-เรีย-ริ-ที", th: "การครองอากาศ", cat: "Air Force" },
+            { en: "Barracks", ipa: "แบ-แร็คส", th: "โรงนอนทหาร", cat: "Facility" },
+            { en: "Battalion", ipa: "แบ-แทล-เลียน", th: "กองพัน", cat: "Unit" },
+            { en: "Brigade", ipa: "บริ-เกด", th: "กองพลน้อย", cat: "Unit" },
+            { en: "Bunker", ipa: "บัง-เกอร์", th: "หลุมหลบภัย, บังเกอร์", cat: "Defense" },
+            { en: "Camouflage", ipa: "คา-มู-ฟลาจ", th: "การพรางตัว", cat: "General" },
+            { en: "Casualty", ipa: "แคช-ชวล-ที", th: "ผู้บาดเจ็บหรือเสียชีวิต", cat: "Medical" },
+            { en: "Ceasefire", ipa: "ซีส-ไฟเออร์", th: "การหยุดยิง", cat: "Command" },
+            { en: "Chain of Command", ipa: "เชน-ออฟ-คอม-มานด์", th: "สายการบังคับบัญชา", cat: "Admin" },
+            { en: "Civilian", ipa: "ซิ-วิล-เลียน", th: "พลเรือน", cat: "Person" },
+            { en: "Collateral Damage", ipa: "คอ-แลท-เทอ-รัล-ดา-เมจ", th: "ความเสียหายข้างเคียง", cat: "Damage" },
+            { en: "Combat", ipa: "คอม-แบท", th: "การรบ", cat: "Action" },
+            { en: "Company", ipa: "คอม-ปะ-นี", th: "กองร้อย", cat: "Unit" },
+            { en: "Convoy", ipa: "คอน-วอย", th: "ขบวนยานยนต์", cat: "Logistics" },
+            { en: "Corporal", ipa: "คอร์-ปอ-รัล", th: "สิบโท", cat: "Rank" },
+            { en: "Counterattack", ipa: "เคา-เตอร์-อะ-แทค", th: "การตีโต้ตอบ", cat: "Tactics" },
+            { en: "Curfew", ipa: "เคอร์-ฟิว", th: "การห้ามออกนอกเคหสถาน", cat: "Law" },
+            { en: "Deployed", ipa: "ดี-พลอย-ด", th: "ถูกส่งไปปฏิบัติหน้าที่", cat: "Status" },
+            { en: "Detachment", ipa: "ดี-แทช-เมนท์", th: "ชุดแยก, หน่วยแยก", cat: "Unit" },
+            { en: "Drill", ipa: "ดริล", th: "การฝึก, การสวนสนาม", cat: "Training" },
+            { en: "Enemy", ipa: "เอ-เน-มี", th: "ข้าศึก", cat: "Target" },
+            { en: "Engagement", ipa: "เอ็น-เกจ-เมนท์", th: "การปะทะ", cat: "Action" },
+            { en: "Extraction", ipa: "เอ็กซ์-แทรค-ชัน", th: "การถอนตัว, การช่วยเหลือออกมา", cat: "Ops" },
+            { en: "Flank", ipa: "แฟลงค์", th: "ปีก (ซ้าย/ขวา ของกองกำลัง)", cat: "Position" },
+            { en: "Formation", ipa: "ฟอร์-เม-ชัน", th: "รูปแบบขบวน", cat: "Tactics" },
+            { en: "Friendly Fire", ipa: "เฟรนด์-ลี-ไฟเออร์", th: "การยิงโดนพวกเดียวกันเอง", cat: "Incident" },
+            { en: "Garrison", ipa: "แก-ริ-ซัน", th: "กองรักษาการณ์", cat: "Facility" },
+            { en: "General", ipa: "เจน-เนอ-รัล", th: "นายพล", cat: "Rank" },
+            { en: "Grenade", ipa: "กรี-เนด", th: "ระเบิดมือ", cat: "Weapon" },
+            { en: "Guerrilla", ipa: "เกอ-ริล-ลา", th: "กองโจร", cat: "Unit" },
+            { en: "Headquarters (HQ)", ipa: "เฮด-ควอ-เตอร์", th: "กองบัญชาการ", cat: "Facility" },
+            { en: "Hostile", ipa: "ฮอส-ไทล์", th: "เป็นปรปักษ์, ฝ่ายตรงข้าม", cat: "Status" },
+            { en: "Howitzer", ipa: "ฮาว-อิต-เซอร์", th: "ปืนใหญ่วิถีโค้ง", cat: "Weapon" },
+            { en: "Infantry", ipa: "อิน-แฟน-ทรี", th: "ทหารราบ", cat: "Unit" },
+            { en: "Insurgent", ipa: "อิน-เซอร์-เจ้นท์", th: "ผู้ก่อความไม่สงบ", cat: "Person" },
+            { en: "Intelligence", ipa: "อิน-เทล-ลิ-เจนซ์", th: "ข่าวกรอง", cat: "Intel" },
+            { en: "Invasion", ipa: "อิน-เว-ชัน", th: "การรุกราน", cat: "Ops" },
+            { en: "Killed in Action (KIA)", ipa: "เค-ไอ-เอ", th: "เสียชีวิตในการรบ", cat: "Status" },
+            { en: "Lieutenant", ipa: "ลู-เท-นันท์", th: "ร้อยโท", cat: "Rank" },
+            { en: "Logistics", ipa: "โล-จิส-ติกส์", th: "การส่งกำลังบำรุง", cat: "Support" },
+            { en: "Machine Gun", ipa: "มะ-ชีน-กัน", th: "ปืนกล", cat: "Weapon" },
+            { en: "Maneuver", ipa: "มะ-นู-เวอร์", th: "การดำเนินกลยุทธ์", cat: "Tactics" },
+            { en: "Medic", ipa: "เม-ดิก", th: "เสนารักษ์", cat: "Role" },
+            { en: "Mercenary", ipa: "เมอ-ซี-เน-รี", th: "ทหารรับจ้าง", cat: "Person" },
+            { en: "Minefield", ipa: "ไมน์-ฟิลด์", th: "สนามทุ่นระเบิด", cat: "Area" },
+            { en: "Mission", ipa: "มิช-ชัน", th: "ภารกิจ", cat: "Ops" },
+            { en: "Mortar", ipa: "มอร์-ตาร์", th: "เครื่องยิงลูกระเบิด", cat: "Weapon" },
+            { en: "Neutralize", ipa: "นิว-ทรอ-ไลซ์", th: "ทำลายล้าง, ทำให้หมดสภาพ", cat: "Action" },
+            { en: "Night Vision", ipa: "ไนท์-วิ-ชัน", th: "กล้องมองกลางคืน", cat: "Equipment" },
+            { en: "Objective", ipa: "ออบ-เจก-ทีฟ", th: "เป้าหมายภารกิจ", cat: "Ops" },
+            { en: "Offensive", ipa: "ออฟ-เฟน-ซีฟ", th: "การรุก", cat: "Tactics" },
+            { en: "Operation", ipa: "ออ-เปอ-เร-ชัน", th: "ยุทธการ", cat: "Ops" },
+            { en: "Paratrooper", ipa: "พา-รา-ทรู-เปอร์", th: "ทหารพลร่ม", cat: "Unit" },
+            { en: "Patrol", ipa: "พา-โทรล", th: "การลาดตระเวน", cat: "Action" },
+            { en: "Perimeter", ipa: "เพอ-ริ-มิ-เตอร์", th: "แนวรอบนอก", cat: "Area" },
+            { en: "Platoon", ipa: "พลา-ทูน", th: "หมวด", cat: "Unit" },
+            { en: "Private", ipa: "ไพร-เวท", th: "พลทหาร", cat: "Rank" },
+            { en: "Protocol", ipa: "โปร-โต-คอล", th: "ระเบียบปฏิบัติ", cat: "Admin" },
+            { en: "Radar", ipa: "เร-ดาร์", th: "เรดาร์", cat: "Equipment" },
+            { en: "Radio Silence", ipa: "เร-ดิ-โอ-ไซ-เลนซ์", th: "การงดใช้วิทยุ", cat: "Comms" },
+            { en: "Reconnaissance (Recon)", ipa: "รี-คอน-เน-ซานซ์", th: "การลาดตระเวนหาข่าว", cat: "Intel" },
+            { en: "Recruit", ipa: "รี-ครูท", th: "ทหารใหม่", cat: "Rank" },
+            { en: "Regiment", ipa: "เร-จิ-เมนท์", th: "กรมทหาร", cat: "Unit" },
+            { en: "Reinforcement", ipa: "รี-อิน-ฟอร์ซ-เมนท์", th: "กำลังเสริม", cat: "Support" },
+            { en: "Retreat", ipa: "รี-ทรีท", th: "การถอยทัพ", cat: "Action" },
+            { en: "Rules of Engagement (ROE)", ipa: "รูลส์-ออฟ-เอ็น-เกจ-เมนท์", th: "กฎการปะทะ", cat: "Law" },
+            { en: "Sabotage", ipa: "ซา-โบ-ทาจ", th: "การก่อวินาศกรรม", cat: "Action" },
+            { en: "Salute", ipa: "ซา-ลูท", th: "การทำความเคารพ", cat: "Protocol" },
+            { en: "Sector", ipa: "เซค-เตอร์", th: "พื้นที่รับผิดชอบ", cat: "Area" },
+            { en: "Sergeant", ipa: "ซาร์-เจนท์", th: "สิบเอก", cat: "Rank" },
+            { en: "Sniper", ipa: "สไน-เปอร์", th: "พลซุ่มยิง", cat: "Role" },
+            { en: "Special Forces", ipa: "สเป-เชียล-ฟอร์-เซส", th: "หน่วยรบพิเศษ", cat: "Unit" },
+            { en: "Squad", ipa: "สควอด", th: "หมู่ (ทหาร)", cat: "Unit" },
+            { en: "Stand Down", ipa: "สแตนด์-ดาวน์", th: "ผ่อนคลายความพร้อม, จบภารกิจ", cat: "Command" },
+            { en: "Strategy", ipa: "สแตรท-เต-จี", th: "ยุทธศาสตร์", cat: "Planning" },
+            { en: "Suppression Fire", ipa: "ซับ-เพรส-ชัน-ไฟเออร์", th: "การยิงกดดัน", cat: "Tactics" },
+            { en: "Surrender", ipa: "ซอ-เรน-เดอร์", th: "การยอมจำนน", cat: "Action" },
+            { en: "Tactics", ipa: "แทค-ติกส์", th: "ยุทธวิธี", cat: "Planning" },
+            { en: "Target", ipa: "ทาร์-เก็ต", th: "เป้าหมาย", cat: "Target" },
+            { en: "Terrain", ipa: "เทอร์-เรน", th: "ภูมิประเทศ", cat: "Geo" },
+            { en: "Treaty", ipa: "ทรี-ที", th: "สนธิสัญญา", cat: "Politics" },
+            { en: "Trench", ipa: "เทรนช์", th: "สนามเพลาะ", cat: "Defense" },
+            { en: "Uniform", ipa: "ยู-นิ-ฟอร์ม", th: "เครื่องแบบ", cat: "Gear" },
+            { en: "Unit", ipa: "ยู-นิต", th: "หน่วย", cat: "Unit" },
+            { en: "Vehicle", ipa: "วี-ฮิ-เคิล", th: "ยานพาหนะ", cat: "Logistics" },
+            { en: "Veteran", ipa: "เวท-เทอ-รัน", th: "ทหารผ่านศึก", cat: "Person" },
+            { en: "Victory", ipa: "วิก-ตอ-รี", th: "ชัยชนะ", cat: "Result" },
+            { en: "Warhead", ipa: "วอร์-เฮด", th: "หัวรบ", cat: "Weapon" },
+            { en: "Weapon", ipa: "เว-พอน", th: "อาวุธ", cat: "Weapon" },
+            { en: "Withdrawal", ipa: "วิธ-ดรอ-วัล", th: "การถอนตัว", cat: "Action" },
+            { en: "Zone", ipa: "โซน", th: "เขตพื้นที่", cat: "Area" },
+            { en: "Airborne", ipa: "แอร์-บอร์น", th: "พลร่ม, ส่งทางอากาศ", cat: "Unit" },
+            { en: "Amphibious", ipa: "แอม-ฟิ-เบียส", th: "สะเทินน้ำสะเทินบก", cat: "Type" },
+            { en: "Arsenal", ipa: "อาร์-เซ-นอล", th: "คลังแสง", cat: "Facility" },
+            { en: "Ballistic", ipa: "บอล-ลิส-ติก", th: "ขีปนาวุธ", cat: "Tech" },
+            { en: "Blockade", ipa: "บล็อก-เคด", th: "การปิดล้อม", cat: "Tactics" },
+            { en: "Briefing", ipa: "บรีฟ-ฟิง", th: "การสรุปสถานการณ์", cat: "Comms" },
+            { en: "Camaraderie", ipa: "คา-มา-รา-เด-รี", th: "ความสนิทสนมกลมเกลียว", cat: "Morale" },
+            { en: "Checkpoint", ipa: "เช็ค-พอยท์", th: "จุดตรวจ", cat: "Control" },
+            { en: "Cipher", ipa: "ไซ-เฟอร์", th: "รหัสลับ", cat: "Intel" },
+            { en: "Colonel", ipa: "เคอ-เนล", th: "พันเอก", cat: "Rank" },
+            { en: "Command", ipa: "คอม-มานด์", th: "การบังคับบัญชา", cat: "Admin" },
+            { en: "Coordinates", ipa: "โค-ออ-ดิ-เนทส์", th: "พิกัด", cat: "Nav" }
+        ];
+
+        // Sort alphabetically by English word
+        vocabularyData.sort((a, b) => a.en.localeCompare(b.en));
+
+        // --------------------------------------------------------
+        // STATE MANAGEMENT
+        // --------------------------------------------------------
+        let activeCategory = 'All';
+        let searchQuery = '';
+
+        const gridEl = document.getElementById('vocab-grid');
+        const noResultsEl = document.getElementById('no-results');
+        const searchInput = document.getElementById('searchInput');
+
+        // Extract Top Categories for filters
+        const getPopularCategories = () => {
+            const counts = {};
+            vocabularyData.forEach(item => counts[item.cat] = (counts[item.cat] || 0) + 1);
+            return Object.keys(counts)
+                .filter(cat => counts[cat] >= 3 || ['Weapon', 'Unit', 'Tactics', 'Rank'].includes(cat))
+                .sort((a,b) => counts[b] - counts[a]);
+        };
+
+        // --------------------------------------------------------
+        // INITIALIZATION
+        // --------------------------------------------------------
+        function initApp() {
+            document.getElementById('total-count').textContent = vocabularyData.length;
+            
+            // Build Category Filters
+            const filterContainer = document.getElementById('category-filters');
+            const topCats = getPopularCategories();
+            
+            topCats.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.textContent = cat.toUpperCase();
+                btn.className = `cat-btn px-5 py-2 rounded-xl text-sm font-bold tracking-wider font-mono whitespace-nowrap bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 transition-all`;
+                btn.onclick = () => filterCategory(cat, btn);
+                filterContainer.appendChild(btn);
+            });
+
+            // Event Listeners
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                renderCards();
+            });
+
+            // Initialize TTS voices
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            }
+
+            renderCards();
+        }
+
+        // --------------------------------------------------------
+        // RENDERING LOGIC
+        // --------------------------------------------------------
+        function filterCategory(cat, btnElement = null) {
+            activeCategory = cat;
+            
+            const allBtns = document.querySelectorAll('.cat-btn');
+            allBtns.forEach(b => {
+                b.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-500', 'shadow-lg');
+                b.classList.add('bg-slate-800', 'text-slate-400', 'border-slate-700');
+            });
+
+            if (btnElement) {
+                btnElement.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700');
+                btnElement.classList.add('bg-emerald-600', 'text-white', 'border-emerald-500', 'shadow-lg');
+            } else {
+                allBtns[0].classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700');
+                allBtns[0].classList.add('bg-emerald-600', 'text-white', 'border-emerald-500', 'shadow-lg');
+            }
+
+            renderCards();
+        }
+
+        function renderCards() {
+            gridEl.innerHTML = '';
+            
+            const filtered = vocabularyData.filter(item => {
+                const matchesCat = activeCategory === 'All' || item.cat === activeCategory;
+                const matchesSearch = item.en.toLowerCase().includes(searchQuery) || 
+                                      item.th.includes(searchQuery) || 
+                                      item.ipa.includes(searchQuery);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                noResultsEl.classList.remove('hidden');
+                gridEl.classList.add('hidden');
+            } else {
+                noResultsEl.classList.add('hidden');
+                gridEl.classList.remove('hidden');
+                
+                filtered.forEach(item => {
+                    const safeWord = item.en.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    
+                    const card = document.createElement('div');
+                    card.className = "vocab-card bg-slate-800/80 backdrop-blur-sm rounded-[1.5rem] p-5 flex flex-col justify-between h-full relative group";
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="inline-block px-2 py-1 bg-slate-700 text-emerald-400 text-[10px] font-bold font-mono rounded uppercase tracking-widest mb-2 border border-slate-600">
+                                    [ ${item.cat} ]
+                                </span>
+                                <h3 class="text-2xl font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">${item.en}</h3>
+                                <p class="text-slate-400 font-mono text-sm italic">${item.ipa}</p>
+                            </div>
+                            
+                            <!-- Audio Button -->
+                            <button onclick="speak('${safeWord}', this)" class="w-12 h-12 rounded-xl bg-slate-700 text-slate-300 flex items-center justify-center hover:bg-emerald-500 hover:text-white hover:shadow-lg hover:shadow-emerald-500/30 transition-all active:scale-95 shrink-0" title="Listen">
+                                <i class="ph-fill ph-speaker-high text-2xl pointer-events-none"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="pt-4 border-t border-slate-700 mt-auto">
+                            <p class="text-slate-200 text-lg">${item.th}</p>
+                        </div>
+                    `;
+                    gridEl.appendChild(card);
+                });
+            }
+        }
+
+        // --------------------------------------------------------
+        // AUDIO SYSTEM (Hybrid Native & Google TTS)
+        // --------------------------------------------------------
+        window.currentAudio = null;
+        window.currentUtterance = null;
+
+        function speak(text, btnElement) {
+            // UI Feedback
+            let icon = null;
+            let originalClass = "ph-fill ph-speaker-high text-2xl pointer-events-none";
+            
+            if (btnElement) {
+                icon = btnElement.querySelector('i');
+                if (icon) {
+                    originalClass = icon.className;
+                    icon.className = 'ph-fill ph-speaker-high text-2xl text-white animate-pulse pointer-events-none';
+                    btnElement.classList.add('bg-emerald-500', 'text-white', 'shadow-lg', 'shadow-emerald-500/50');
+                    btnElement.classList.remove('bg-slate-700', 'text-slate-300');
+                }
+            }
+
+            const resetIcon = () => {
+                if (icon && btnElement) {
+                    icon.className = originalClass;
+                    btnElement.classList.remove('bg-emerald-500', 'text-white', 'shadow-lg', 'shadow-emerald-500/50');
+                    btnElement.classList.add('bg-slate-700', 'text-slate-300');
+                }
+            };
+
+            const playFallbackOnlineTTS = () => {
+                if (window.currentAudio) {
+                    window.currentAudio.pause();
+                    window.currentAudio.currentTime = 0;
+                }
+                const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=en-US&q=${encodeURIComponent(text)}`;
+                window.currentAudio = new Audio(url);
+                window.currentAudio.crossOrigin = "anonymous";
+                window.currentAudio.onended = resetIcon;
+                window.currentAudio.onerror = resetIcon;
+                window.currentAudio.play().catch(err => {
+                    console.error("Fallback TTS failed:", err);
+                    resetIcon();
+                });
+            };
+
+            // เช็คว่าเป็น In-App Browser (เช่นเปิดใน LINE, Facebook หรือ IG) หรือไม่
+            const isWebView = /Line|FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+
+            // หลักการทำงาน: เช็คก่อนว่าเบราว์เซอร์รองรับระบบเสียงปกติ (Native) ไหม
+            if ('speechSynthesis' in window && !isWebView) {
+                // ถ้าเป็นเบราว์เซอร์ปกติที่รองรับ (ไม่ใช่ในแอป LINE)
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+                    window.speechSynthesis.cancel();
+                }
+                
+                window.currentUtterance = new SpeechSynthesisUtterance(text);
+                window.currentUtterance.lang = 'en-US'; 
+                window.currentUtterance.rate = 0.85;
+
+                window.currentUtterance.onend = resetIcon;
+                window.currentUtterance.onerror = (e) => {
+                    console.warn("Native TTS Error, switching to Fallback...", e);
+                    playFallbackOnlineTTS();
+                };
+
+                window.speechSynthesis.speak(window.currentUtterance);
+                
+                // ตรวจสอบสำรองอีกชั้น เผื่อ Native TTS ทำงานเงียบแต่ไม่โยน Error
+                setTimeout(() => {
+                    if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+                        playFallbackOnlineTTS();
+                    }
+                }, 100);
+            } else {
+                // ถ้าพบว่าไม่รองรับ หรือเปิดในแอป LINE ให้สลับไปดึงไฟล์เสียงออนไลน์มาเล่นแทนทันที
+                playFallbackOnlineTTS();
+            }
+        }
+
+        // Boot App
+        window.onload = initApp;
+
+    </script>
+</body>
+</html>
